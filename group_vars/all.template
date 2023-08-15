@@ -1,0 +1,24 @@
+---
+# The variables file used by the playbooks on all hosts.
+# These don't have to be explicitly imported by vars_files: they are autopopulated.
+
+# rename `all.template` to `all`, and set:
+# ansible_port, ansible_user, ansible_ssh_private_key_file, req_fqdn, reg_hostname, reg_startpassword
+
+
+ansible_python_interpreter: /usr/bin/python3
+timeout: 120
+ansible-ssh-timeout: 120
+ansible_connection: ssh
+ansible_become: yes
+ansible_become_method: sudo
+
+ansible_port: PORT
+ansible_user: USERNAME
+ansible_ssh_private_key_file: ~/.ssh/PRIVATEKEYFILE
+
+reg_fqdn: hostname.example.com
+reg_hostname: hostname
+
+reg_startpassword: NotVerySecurePassword
+

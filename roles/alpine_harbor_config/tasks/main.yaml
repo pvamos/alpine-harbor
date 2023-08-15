@@ -1,0 +1,49 @@
+---
+
+# Alpine linux Harbor image repository
+# documentation:
+# https://goharbor.io/docs/2.8.0/install-config/ 
+
+- name: Test connection with ping
+  ansible.builtin.ping:
+
+- name: Create config file /harbor/harbor.yml from jinja template
+  template:
+    src:  templates/harbor.yml.j2
+    dest: /harbor/harbor.yml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Run /harbor/prepare
+  ansible.builtin.raw: 'cd /harbor && PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /harbor/prepare'
+  register: prepare_output
+
+- name: Print /harbor/prepare stdout output first 6 lines
+  ansible.builtin.debug:
+    var: prepare_output.stdout_lines[0:5]
+
+- name: Print /harbor/prepare stdout output last 17 lines
+  ansible.builtin.debug:
+    var: prepare_output.stdout_lines[-17:]
+
+- name: Print /harbor/prepare stderr output
+  ansible.builtin.debug:
+    var: prepare_output.stderr_lines
+
+- name: Run /harbor/install.sh --with-trivy
+  ansible.builtin.raw: 'cd /harbor && PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /harbor/install.sh --with-trivy'
+  register: installsh_output
+
+- name: Print install.sh stdout output first 42 lines
+  ansible.builtin.debug:
+    var: installsh_output.stdout_lines[0:41]
+
+- name: Print install.sh stdout output last 12 lines
+  ansible.builtin.debug:
+    var: installsh_output.stdout_lines[-12:]
+
+- name: Print install.sh stderr output
+  ansible.builtin.debug:
+    var: installsh_output.stderr_lines
+

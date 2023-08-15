@@ -1,0 +1,10 @@
+---
+
+- name: Alpine linux Harbor deployment
+  hosts: registry
+  gather_facts: true
+  roles:
+    - role: alpine_latest
+    - role: alpine_kernelparams
+    - role: alpine_harbor_binaries
+    - role: alpine_harbor_config

@@ -1,0 +1,397 @@
+[p@ansible alpine-harbor]$ time ansible-playbook -i hosts alpine-harbor.yaml
+
+PLAY [Alpine linux Harbor deployment] ****************************************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************************************************
+Tuesday 15 August 2023  15:22:07 +0000 (0:00:00.019)       0:00:00.019 ********
+ok: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_latest : Test connection with user p on port 31212] *************************************************************************************
+Tuesday 15 August 2023  15:22:09 +0000 (0:00:02.057)       0:00:02.076 ********
+ok: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_latest : Set /etc/apk/repositories to latest-stable/main and latest-stable/community] ***************************************************
+Tuesday 15 August 2023  15:22:10 +0000 (0:00:01.015)       0:00:03.092 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_latest : Upgrade all installed apk packages to the latest versions] *********************************************************************
+Tuesday 15 August 2023  15:22:12 +0000 (0:00:01.880)       0:00:04.973 ********
+ok: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_latest : Reboot the host after apk upgrade] *********************************************************************************************
+Tuesday 15 August 2023  15:22:14 +0000 (0:00:01.983)       0:00:06.956 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_latest : Test connection with user p on port 31212] *************************************************************************************
+Tuesday 15 August 2023  15:22:26 +0000 (0:00:11.579)       0:00:18.536 ********
+ok: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Test connection with user p on port 31212] *******************************************************************************
+Tuesday 15 August 2023  15:22:27 +0000 (0:00:00.927)       0:00:19.464 ********
+ok: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Set net forwarding kernel params] ****************************************************************************************
+Tuesday 15 August 2023  15:22:27 +0000 (0:00:00.814)       0:00:20.278 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Apply kernel parameter changes] ******************************************************************************************
+Tuesday 15 August 2023  15:22:29 +0000 (0:00:01.632)       0:00:21.910 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Set needed kernel modules in /etc/modules-load.d/k3s.conf] ***************************************************************
+Tuesday 15 August 2023  15:22:30 +0000 (0:00:00.936)       0:00:22.847 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Modprobe br_netfilter] ***************************************************************************************************
+Tuesday 15 August 2023  15:22:31 +0000 (0:00:01.589)       0:00:24.437 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Configure cgroups version 2 mode to mount cgroups] ***********************************************************************
+Tuesday 15 August 2023  15:22:32 +0000 (0:00:00.851)       0:00:25.288 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Create /etc/cgconfig.conf] ***********************************************************************************************
+Tuesday 15 August 2023  15:22:33 +0000 (0:00:00.933)       0:00:26.222 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Modify /etc/update-extlinux.conf] ****************************************************************************************
+Tuesday 15 August 2023  15:22:35 +0000 (0:00:01.673)       0:00:27.896 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Correct /sbin/extlinux reference in /sbin/update-extlinux] ***************************************************************
+Tuesday 15 August 2023  15:22:36 +0000 (0:00:00.798)       0:00:28.695 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Run /sbin/update-extlinux] ***********************************************************************************************
+Tuesday 15 August 2023  15:22:37 +0000 (0:00:00.821)       0:00:29.516 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Reboot the host after kernel parameter changes] **************************************************************************
+Tuesday 15 August 2023  15:22:37 +0000 (0:00:00.844)       0:00:30.361 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_kernelparams : Test connection with user p on port 31212] *******************************************************************************
+Tuesday 15 August 2023  15:22:49 +0000 (0:00:11.992)       0:00:42.353 ********
+ok: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Test connection with ping] ********************************************************************************************
+Tuesday 15 August 2023  15:22:50 +0000 (0:00:00.923)       0:00:43.277 ********
+ok: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Install packages python3 py-setuptools tar gzip sed curl bash openssl docker docker-compose gpg ncurses] **************
+Tuesday 15 August 2023  15:22:51 +0000 (0:00:00.807)       0:00:44.084 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Download harbor-online-installer-v2.8.3.tgz] **************************************************************************
+Tuesday 15 August 2023  15:23:07 +0000 (0:00:16.008)       0:01:00.093 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Download harbor-online-installer-v2.8.3.tgz.asc] **********************************************************************
+Tuesday 15 August 2023  15:23:09 +0000 (0:00:01.651)       0:01:01.744 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : First failing try, Get Harbor signing public key, gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C] ***
+Tuesday 15 August 2023  15:23:10 +0000 (0:00:01.374)       0:01:03.119 ********
+fatal: [reg.frankfurt.pvamos.net]: FAILED! => {"changed": true, "msg": "non-zero return code", "rc": 2, "stderr": "Shared connection to reg.frankfurt.pvamos.net closed.\r\n", "stderr_lines": ["Shared connection to reg.frankfurt.pvamos.net closed."], "stdout": "gpg: directory '/root/.gnupg' created\r\ngpg: /root/.gnupg/trustdb.gpg: trustdb created\r\ngpg: key 644FF454C0B4115C: public key \"Harbor-sign (The key for signing Harbor build) <jiangd@vmware.com>\" imported\r\ngpg: error running '/usr/bin/gpg-agent': probably not installed\r\ngpg: failed to start gpg-agent '/usr/bin/gpg-agent': Configuration error\r\ngpg: can't connect to the gpg-agent: Configuration error\r\ngpg: Total number processed: 1\r\ngpg:               imported: 1\r\n", "stdout_lines": ["gpg: directory '/root/.gnupg' created", "gpg: /root/.gnupg/trustdb.gpg: trustdb created", "gpg: key 644FF454C0B4115C: public key \"Harbor-sign (The key for signing Harbor build) <jiangd@vmware.com>\" imported", "gpg: error running '/usr/bin/gpg-agent': probably not installed", "gpg: failed to start gpg-agent '/usr/bin/gpg-agent': Configuration error", "gpg: can't connect to the gpg-agent: Configuration error", "gpg: Total number processed: 1", "gpg:               imported: 1"]}
+...ignoring
+
+TASK [alpine_harbor_binaries : Second, successful try, Get Harbor signing public key, gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C] ***
+Tuesday 15 August 2023  15:23:11 +0000 (0:00:00.580)       0:01:03.700 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Check if downloaded installer is genuine gpg -v --keyserver hkps://keyserver.ubuntu.com --verify /root/harbor-online-installer-v2.8.3.tgz.asc] ***
+Tuesday 15 August 2023  15:23:11 +0000 (0:00:00.281)       0:01:03.981 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Print installer check stdout output] **********************************************************************************
+Tuesday 15 August 2023  15:23:12 +0000 (0:00:00.831)       0:01:04.812 ********
+ok: [reg.frankfurt.pvamos.net] => {
+    "check_installer_output.stdout_lines": []
+}
+
+TASK [alpine_harbor_binaries : Print installer check stderr output] **********************************************************************************
+Tuesday 15 August 2023  15:23:12 +0000 (0:00:00.029)       0:01:04.842 ********
+ok: [reg.frankfurt.pvamos.net] => {
+    "check_installer_output.stderr_lines": [
+        "gpg: enabled compatibility flags:",
+        "gpg: assuming signed data in '/root/harbor-online-installer-v2.8.3.tgz'",
+        "gpg: Signature made Thu Jul 27 06:03:17 2023 UTC",
+        "gpg:                using RSA key 7722D168DAEC457806C96FF9644FF454C0B4115C",
+        "gpg: using pgp trust model",
+        "gpg: Good signature from \"Harbor-sign (The key for signing Harbor build) <jiangd@vmware.com>\" [unknown]",
+        "gpg: WARNING: This key is not certified with a trusted signature!",
+        "gpg:          There is no indication that the signature belongs to the owner.",
+        "Primary key fingerprint: 7722 D168 DAEC 4578 06C9  6FF9 644F F454 C0B4 115C",
+        "gpg: binary signature, digest algorithm SHA512, key algorithm rsa4096"
+    ]
+}
+
+TASK [alpine_harbor_binaries : Ensure group "harbor" exists with correct gid 10000] ******************************************************************
+Tuesday 15 August 2023  15:23:12 +0000 (0:00:00.030)       0:01:04.873 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Add the user 'harbor' with uid 10000 and a primary group of 'harbor'] *************************************************
+Tuesday 15 August 2023  15:23:13 +0000 (0:00:00.933)       0:01:05.806 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Create /harbor directory if it does not exist] ************************************************************************
+Tuesday 15 August 2023  15:23:14 +0000 (0:00:01.123)       0:01:06.930 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Unarchive harbor-online-installer-v2.8.3.tgz to /harbor] **************************************************************
+Tuesday 15 August 2023  15:23:15 +0000 (0:00:00.968)       0:01:07.899 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Generate CA certificate private key /harbor/ca.key] *******************************************************************
+Tuesday 15 August 2023  15:23:17 +0000 (0:00:01.796)       0:01:09.695 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Generate CA certificate /harbor/ca.crt] *******************************************************************************
+Tuesday 15 August 2023  15:23:18 +0000 (0:00:01.331)       0:01:11.027 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Generate Server Certificate private key /harbor/reg.frankfurt.pvamos.net.key] *****************************************
+Tuesday 15 August 2023  15:23:19 +0000 (0:00:00.861)       0:01:11.888 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Generate certificate signing request /harbor/reg.frankfurt.pvamos.net.csr] ********************************************
+Tuesday 15 August 2023  15:23:21 +0000 (0:00:01.982)       0:01:13.870 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Create x509 v3 extension file /harbor/v3.ext from jinja template] *****************************************************
+Tuesday 15 August 2023  15:23:22 +0000 (0:00:00.854)       0:01:14.725 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Use the x509 v3 extension file to generate Harbor host certificate /harbor/reg.frankfurt.pvamos.net.crt] **************
+Tuesday 15 August 2023  15:23:23 +0000 (0:00:01.605)       0:01:16.330 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Create /data directory if it does not exist] **************************************************************************
+Tuesday 15 August 2023  15:23:24 +0000 (0:00:00.881)       0:01:17.212 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Create /data/cert directory if it does not exist] *********************************************************************
+Tuesday 15 August 2023  15:23:25 +0000 (0:00:00.842)       0:01:18.055 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Copy /harbor/reg.frankfurt.pvamos.net.crt to /data/cert/] *************************************************************
+Tuesday 15 August 2023  15:23:26 +0000 (0:00:00.853)       0:01:18.908 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Copy /harbor/reg.frankfurt.pvamos.net.key to /data/cert/] *************************************************************
+Tuesday 15 August 2023  15:23:27 +0000 (0:00:00.826)       0:01:19.735 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Convert reg.frankfurt.pvamos.net.crt to reg.frankfurt.pvamos.net.cert, for use by Docker] *****************************
+Tuesday 15 August 2023  15:23:28 +0000 (0:00:00.830)       0:01:20.566 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Create /etc/docker directory if it does not exist] ********************************************************************
+Tuesday 15 August 2023  15:23:29 +0000 (0:00:00.882)       0:01:21.448 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Create /etc/docker/certs.d directory if it does not exist] ************************************************************
+Tuesday 15 August 2023  15:23:29 +0000 (0:00:00.868)       0:01:22.317 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Create /etc/docker/certs.d/reg.frankfurt.pvamos.net directory if it does not exist] ***********************************
+Tuesday 15 August 2023  15:23:30 +0000 (0:00:00.815)       0:01:23.133 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Copy /harbor/reg.frankfurt.pvamos.net.cert to /etc/docker/certs.d/reg.frankfurt.pvamos.net/] **************************
+Tuesday 15 August 2023  15:23:31 +0000 (0:00:00.824)       0:01:23.958 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Copy /harbor/reg.frankfurt.pvamos.net.key to /etc/docker/certs.d/reg.frankfurt.pvamos.net/] ***************************
+Tuesday 15 August 2023  15:23:32 +0000 (0:00:00.850)       0:01:24.808 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Copy /harbor/ca.crt to /etc/docker/certs.d/reg.frankfurt.pvamos.net/] *************************************************
+Tuesday 15 August 2023  15:23:33 +0000 (0:00:00.856)       0:01:25.665 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Add docker service to default runlevel] *******************************************************************************
+Tuesday 15 August 2023  15:23:34 +0000 (0:00:00.843)       0:01:26.508 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Start docker service] *************************************************************************************************
+Tuesday 15 August 2023  15:23:34 +0000 (0:00:00.811)       0:01:27.320 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Check docker service status] ******************************************************************************************
+Tuesday 15 August 2023  15:23:35 +0000 (0:00:01.077)       0:01:28.398 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_binaries : Print docker service status] ******************************************************************************************
+Tuesday 15 August 2023  15:23:37 +0000 (0:00:01.247)       0:01:29.645 ********
+ok: [reg.frankfurt.pvamos.net] => {
+    "check_docker_svc_output.stdout_lines": [
+        " * status: started"
+    ]
+}
+
+TASK [alpine_harbor_config : Test connection with ping] **********************************************************************************************
+Tuesday 15 August 2023  15:23:37 +0000 (0:00:00.035)       0:01:29.680 ********
+ok: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_config : Create config file /harbor/harbor.yml from jinja template] **************************************************************
+Tuesday 15 August 2023  15:23:38 +0000 (0:00:00.881)       0:01:30.562 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_config : Run /harbor/prepare] ****************************************************************************************************
+Tuesday 15 August 2023  15:23:39 +0000 (0:00:01.614)       0:01:32.176 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_config : Print /harbor/prepare stdout output first 6 lines] **********************************************************************
+Tuesday 15 August 2023  15:23:57 +0000 (0:00:17.919)       0:01:50.096 ********
+ok: [reg.frankfurt.pvamos.net] => {
+    "prepare_output.stdout_lines[0:5]": [
+        "prepare base dir is set to /harbor",
+        "Unable to find image 'goharbor/prepare:v2.8.3' locally",
+        "v2.8.3: Pulling from goharbor/prepare",
+        "",
+        "\u001b[1A\u001b[2K"
+    ]
+}
+
+TASK [alpine_harbor_config : Print /harbor/prepare stdout output last 17 lines] **********************************************************************
+Tuesday 15 August 2023  15:23:57 +0000 (0:00:00.031)       0:01:50.127 ********
+ok: [reg.frankfurt.pvamos.net] => {
+    "prepare_output.stdout_lines[-17:]": [
+        "Status: Downloaded newer image for goharbor/prepare:v2.8.3",
+        "Generated configuration file: /config/portal/nginx.conf",
+        "Generated configuration file: /config/log/logrotate.conf",
+        "Generated configuration file: /config/log/rsyslog_docker.conf",
+        "Generated configuration file: /config/nginx/nginx.conf",
+        "Generated configuration file: /config/core/env",
+        "Generated configuration file: /config/core/app.conf",
+        "Generated configuration file: /config/registry/config.yml",
+        "Generated configuration file: /config/registryctl/env",
+        "Generated configuration file: /config/registryctl/config.yml",
+        "Generated configuration file: /config/db/env",
+        "Generated configuration file: /config/jobservice/env",
+        "Generated configuration file: /config/jobservice/config.yml",
+        "Generated and saved secret to file: /data/secret/keys/secretkey",
+        "Successfully called func: create_root_cert",
+        "Generated configuration file: /compose_location/docker-compose.yml",
+        "Clean up the input dir"
+    ]
+}
+
+TASK [alpine_harbor_config : Print /harbor/prepare stderr output] ************************************************************************************
+Tuesday 15 August 2023  15:23:57 +0000 (0:00:00.032)       0:01:50.160 ********
+ok: [reg.frankfurt.pvamos.net] => {
+    "prepare_output.stderr_lines": [
+        "Shared connection to reg.frankfurt.pvamos.net closed."
+    ]
+}
+
+TASK [alpine_harbor_config : Run /harbor/install.sh --with-trivy] *************************************************************************************************
+Tuesday 15 August 2023  15:23:57 +0000 (0:00:00.030)       0:01:50.190 ********
+changed: [reg.frankfurt.pvamos.net]
+
+TASK [alpine_harbor_config : Print install.sh stdout output first 42 lines] **************************************************************************
+Tuesday 15 August 2023  15:25:02 +0000 (0:01:04.368)       0:02:54.559 ********
+ok: [reg.frankfurt.pvamos.net] => {
+    "installsh_output.stdout_lines[0:41]": [
+        "",
+        "\u001b(B\u001b[0;4m\u001b[1m\u001b[37m[Step 0]: checking if docker is installed ...\u001b(B\u001b[m",
+        "",
+        "\u001b(B\u001b[0;4m\u001b[1m\u001b[38;5;25mNote:\u001b(B\u001b[m \u001b[38;5;25mdocker version: 23.0.6\u001b(B\u001b[m",
+        "",
+        "\u001b(B\u001b[0;4m\u001b[1m\u001b[37m[Step 1]: checking docker-compose is installed ...\u001b(B\u001b[m",
+        "",
+        "\u001b(B\u001b[0;4m\u001b[1m\u001b[38;5;25mNote:\u001b(B\u001b[m \u001b[38;5;25mDocker Compose version v2.17.3\u001b(B\u001b[m",
+        "",
+        "",
+        "\u001b(B\u001b[0;4m\u001b[1m\u001b[37m[Step 2]: preparing environment ...\u001b(B\u001b[m",
+        "",
+        "\u001b(B\u001b[0;4m\u001b[1m\u001b[37m[Step 3]: preparing harbor configs ...\u001b(B\u001b[m",
+        "prepare base dir is set to /harbor",
+        "Clearing the configuration file: /config/jobservice/env",
+        "Clearing the configuration file: /config/jobservice/config.yml",
+        "Clearing the configuration file: /config/core/app.conf",
+        "Clearing the configuration file: /config/core/env",
+        "Clearing the configuration file: /config/portal/nginx.conf",
+        "Clearing the configuration file: /config/db/env",
+        "Clearing the configuration file: /config/registry/config.yml",
+        "Clearing the configuration file: /config/registry/passwd",
+        "Clearing the configuration file: /config/log/logrotate.conf",
+        "Clearing the configuration file: /config/log/rsyslog_docker.conf",
+        "Clearing the configuration file: /config/nginx/nginx.conf",
+        "Clearing the configuration file: /config/registryctl/env",
+        "Clearing the configuration file: /config/registryctl/config.yml",
+        "Generated configuration file: /config/portal/nginx.conf",
+        "Generated configuration file: /config/log/logrotate.conf",
+        "Generated configuration file: /config/log/rsyslog_docker.conf",
+        "Generated configuration file: /config/nginx/nginx.conf",
+        "Generated configuration file: /config/core/env",
+        "Generated configuration file: /config/core/app.conf",
+        "Generated configuration file: /config/registry/config.yml",
+        "Generated configuration file: /config/registryctl/env",
+        "Generated configuration file: /config/registryctl/config.yml",
+        "Generated configuration file: /config/db/env",
+        "Generated configuration file: /config/jobservice/env",
+        "Generated configuration file: /config/jobservice/config.yml",
+        "loaded secret from file: /data/secret/keys/secretkey",
+        "Generated configuration file: /config/trivy-adapter/env"
+    ]
+}
+
+TASK [alpine_harbor_config : Print install.sh stdout output last 12 lines] ***************************************************************************
+Tuesday 15 August 2023  15:25:02 +0000 (0:00:00.039)       0:02:54.598 ********
+ok: [reg.frankfurt.pvamos.net] => {
+    "installsh_output.stdout_lines[-12:]": [
+        " \u001b[32m✔\u001b[0m Network harbor_harbor        \u001b[32mCreated\u001b[0m\u001b[34m0.1s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container harbor-log         \u001b[32mStarted\u001b[0m\u001b[34m0.8s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container harbor-db          \u001b[32mStarted\u001b[0m\u001b[34m3.1s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container harbor-portal      \u001b[32mStarted\u001b[0m\u001b[34m3.0s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container redis              \u001b[32mStarted\u001b[0m\u001b[34m2.7s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container registryctl        \u001b[32mStarted\u001b[0m\u001b[34m3.0s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container registry           \u001b[32mStarted\u001b[0m\u001b[34m2.8s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container trivy-adapter      \u001b[32mStarted\u001b[0m\u001b[34m3.9s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container harbor-core        \u001b[32mStarted\u001b[0m\u001b[34m4.1s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container nginx              \u001b[32mStarted\u001b[0m\u001b[34m5.4s \u001b[0m",
+        " \u001b[32m✔\u001b[0m Container harbor-jobservice  \u001b[32mStarted\u001b[0m\u001b[34m5.3s \u001b[0m",
+        "\u001b[?25h\u001b[38;5;76m✔ ----Harbor has been installed and started successfully.----\u001b(B\u001b[m"
+    ]
+}
+
+TASK [alpine_harbor_config : Print install.sh stderr output] *****************************************************************************************
+Tuesday 15 August 2023  15:25:02 +0000 (0:00:00.035)       0:02:54.634 ********
+ok: [reg.frankfurt.pvamos.net] => {
+    "installsh_output.stderr_lines": [
+        "Shared connection to reg.frankfurt.pvamos.net closed."
+    ]
+}
+
+PLAY RECAP *******************************************************************************************************************************************
+reg.frankfurt.pvamos.net   : ok=62   changed=45   unreachable=0    failed=0    skipped=0    rescued=0    ignored=1
+
+Tuesday 15 August 2023  15:25:02 +0000 (0:00:00.076)       0:02:54.711 ********
+===============================================================================
+alpine_harbor_config : Run /harbor/install.sh ------------------------------------------------------------------------------------------------ 64.37s
+alpine_harbor_config : Run /harbor/prepare --------------------------------------------------------------------------------------------------- 17.92s
+alpine_harbor_binaries : Install packages python3 py-setuptools tar gzip sed curl bash openssl docker docker-compose gpg ncurses ------------- 16.01s
+alpine_kernelparams : Reboot the host after kernel parameter changes ------------------------------------------------------------------------- 11.99s
+alpine_latest : Reboot the host after apk upgrade -------------------------------------------------------------------------------------------- 11.58s
+Gathering Facts ------------------------------------------------------------------------------------------------------------------------------- 2.06s
+alpine_latest : Upgrade all installed apk packages to the latest versions --------------------------------------------------------------------- 1.98s
+alpine_harbor_binaries : Generate Server Certificate private key /harbor/reg.frankfurt.pvamos.net.key ----------------------------------------- 1.98s
+alpine_latest : Set /etc/apk/repositories to latest-stable/main and latest-stable/community --------------------------------------------------- 1.88s
+alpine_harbor_binaries : Unarchive harbor-online-installer-v2.8.3.tgz to /harbor -------------------------------------------------------------- 1.80s
+alpine_kernelparams : Create /etc/cgconfig.conf ----------------------------------------------------------------------------------------------- 1.67s
+alpine_harbor_binaries : Download harbor-online-installer-v2.8.3.tgz -------------------------------------------------------------------------- 1.65s
+alpine_kernelparams : Set net forwarding kernel params ---------------------------------------------------------------------------------------- 1.63s
+alpine_harbor_config : Create config file /harbor/harbor.yml from jinja template -------------------------------------------------------------- 1.61s
+alpine_harbor_binaries : Create x509 v3 extension file /harbor/v3.ext from jinja template ----------------------------------------------------- 1.61s
+alpine_kernelparams : Set needed kernel modules in /etc/modules-load.d/k3s.conf --------------------------------------------------------------- 1.59s
+alpine_harbor_binaries : Download harbor-online-installer-v2.8.3.tgz.asc ---------------------------------------------------------------------- 1.37s
+alpine_harbor_binaries : Generate CA certificate private key /harbor/ca.key ------------------------------------------------------------------- 1.33s
+alpine_harbor_binaries : Check docker service status ------------------------------------------------------------------------------------------ 1.25s
+alpine_harbor_binaries : Add the user 'harbor' with uid 10000 and a primary group of 'harbor' ------------------------------------------------- 1.12s
+
+real    2m55.394s
+user    0m12.379s
+sys     0m6.033s
+[p@ansible alpine-harbor]$

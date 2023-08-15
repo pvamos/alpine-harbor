@@ -1,0 +1,178 @@
+---
+
+# Alpine linux Harbor image repository
+# documentation:
+# https://goharbor.io/docs/2.8.0/install-config/ 
+
+- name: Test connection with ping
+  ansible.builtin.ping:
+
+- name: Install packages python3 py-setuptools tar gzip sed curl bash openssl docker docker-compose gpg ncurses
+  community.general.apk:
+    name: python3,py-setuptools,tar,gzip,sed,curl,bash,openssl,docker,docker-compose,gpg,ncurses
+    state: present
+    update_cache: true
+
+- name: Download harbor-online-installer-v2.8.3.tgz
+  ansible.builtin.get_url:
+    url: https://github.com/goharbor/harbor/releases/download/v2.8.3/harbor-online-installer-v2.8.3.tgz
+    dest: /root
+
+- name: Download harbor-online-installer-v2.8.3.tgz.asc
+  ansible.builtin.get_url:
+    url: https://github.com/goharbor/harbor/releases/download/v2.8.3/harbor-online-installer-v2.8.3.tgz.asc
+    dest: /root
+
+# always fails at first try, but succeeds at second try
+- name: First failing try, Get Harbor signing public key, gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C
+  ansible.builtin.raw: 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/bin/gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C'
+  ignore_errors: true
+
+- name: Second, successful try, Get Harbor signing public key, gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C
+  ansible.builtin.raw: 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/bin/gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C'
+
+- name: Check if downloaded installer is genuine gpg -v --keyserver hkps://keyserver.ubuntu.com --verify /root/harbor-online-installer-v2.8.3.tgz.asc
+  ansible.builtin.command:
+    cmd: /usr/bin/gpg -v --keyserver hkps://keyserver.ubuntu.com --verify /root/harbor-online-installer-v2.8.3.tgz.asc
+  register: check_installer_output
+
+- name: Print installer check stdout output
+  ansible.builtin.debug:
+    var: check_installer_output.stdout_lines
+
+- name: Print installer check stderr output
+  ansible.builtin.debug:
+    var: check_installer_output.stderr_lines
+
+- name: Ensure group "harbor" exists with correct gid 10000
+  ansible.builtin.group:
+    name: harbor
+    state: present
+    gid: 10000
+
+- name: Add the user 'harbor' with uid 10000 and a primary group of 'harbor'
+  ansible.builtin.user:
+    name: harbor
+    comment: Harbor
+    uid: 10000
+    group: harbor
+
+- name: Create /harbor directory if it does not exist
+  ansible.builtin.file:
+    path: /harbor
+    state: directory
+    mode: '0755'
+    owner: harbor
+    group: harbor
+
+- name: Unarchive harbor-online-installer-v2.8.3.tgz to /harbor
+  ansible.builtin.unarchive:
+    src: /root/harbor-online-installer-v2.8.3.tgz
+    dest: /
+    remote_src: yes
+
+- name: Generate CA certificate private key /harbor/ca.key
+  ansible.builtin.command: /usr/bin/openssl genrsa -out /harbor/ca.key 4096
+
+- name: Generate CA certificate /harbor/ca.crt
+  ansible.builtin.command: /usr/bin/openssl req -x509 -new -nodes -sha512 -days 3650 -subj "/CN={{reg_fqdn}}" -key /harbor/ca.key -out /harbor/ca.crt
+
+- name: Generate Server Certificate private key /harbor/{{reg_fqdn}}.key
+  ansible.builtin.command: /usr/bin/openssl genrsa -out /harbor/{{reg_fqdn}}.key 4096
+
+- name: Generate certificate signing request /harbor/{{reg_fqdn}}.csr
+  ansible.builtin.command: /usr/bin/openssl req -sha512 -new -subj "/CN={{reg_fqdn}}" -key /harbor/{{reg_fqdn}}.key -out /harbor/reg.frankfurt.pvamos.net.csr
+
+- name: Create x509 v3 extension file /harbor/v3.ext from jinja template
+  template:
+    src:  templates/v3.ext.j2
+    dest: /harbor/v3.ext
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Use the x509 v3 extension file to generate Harbor host certificate /harbor/{{reg_fqdn}}.crt
+  ansible.builtin.command: /usr/bin/openssl x509 -req -sha512 -days 3650 -extfile /harbor/v3.ext -CA /harbor/ca.crt -CAkey /harbor/ca.key -CAcreateserial -in /harbor/{{reg_fqdn}}.csr -out /harbor/{{reg_fqdn}}.crt
+
+- name: Create /data directory if it does not exist
+  ansible.builtin.file:
+    path: /data
+    state: directory
+    mode: '0755'
+    owner: harbor
+    group: harbor
+
+- name: Create /data/cert directory if it does not exist
+  ansible.builtin.file:
+    path: /data/cert
+    state: directory
+    mode: '0755'
+    owner: harbor
+    group: harbor
+
+- name: Copy /harbor/{{reg_fqdn}}.crt to /data/cert/
+  ansible.builtin.copy:
+    src: /harbor/{{reg_fqdn}}.crt
+    dest: /data/cert/{{reg_fqdn}}.crt
+    remote_src: yes
+
+- name: Copy /harbor/{{reg_fqdn}}.key to /data/cert/
+  ansible.builtin.copy:
+    src: /harbor/{{reg_fqdn}}.key
+    dest: /data/cert/{{reg_fqdn}}.key
+    remote_src: yes
+
+- name: Convert {{reg_fqdn}}.crt to {{reg_fqdn}}.cert, for use by Docker
+  ansible.builtin.command: /usr/bin/openssl x509 -inform PEM -in /harbor/{{reg_fqdn}}.crt -out /harbor/{{reg_fqdn}}.cert
+
+- name: Create /etc/docker directory if it does not exist
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+
+- name: Create /etc/docker/certs.d directory if it does not exist
+  ansible.builtin.file:
+    path: /etc/docker/certs.d
+    state: directory
+    mode: '0755'
+
+- name: Create /etc/docker/certs.d/{{reg_fqdn}} directory if it does not exist
+  ansible.builtin.file:
+    path: /etc/docker/certs.d/{{reg_fqdn}}
+    state: directory
+    mode: '0755'
+
+- name: Copy /harbor/{{reg_fqdn}}.cert to /etc/docker/certs.d/{{reg_fqdn}}/
+  ansible.builtin.copy:
+    src: /harbor/{{reg_fqdn}}.cert
+    dest: /etc/docker/certs.d/{{reg_fqdn}}/{{reg_fqdn}}.cert
+    remote_src: yes
+
+- name: Copy /harbor/{{reg_fqdn}}.key to /etc/docker/certs.d/{{reg_fqdn}}/
+  ansible.builtin.copy:
+    src: /harbor/{{reg_fqdn}}.key
+    dest: /etc/docker/certs.d/{{reg_fqdn}}/{{reg_fqdn}}.key
+    remote_src: yes
+
+- name: Copy /harbor/ca.crt to /etc/docker/certs.d/{{reg_fqdn}}/
+  ansible.builtin.copy:
+    src: /harbor/ca.crt
+    dest: /etc/docker/certs.d/{{reg_fqdn}}/ca.crt
+    remote_src: yes
+
+- name: Add docker service to default runlevel
+  ansible.builtin.command: /sbin/rc-update add docker default
+
+- name: Start docker service
+  ansible.builtin.command: /sbin/rc-service docker start
+
+- name: Check docker service status
+  ansible.builtin.command:
+    cmd: /sbin/rc-service docker status
+  register: check_docker_svc_output
+
+- name: Print docker service status
+  ansible.builtin.debug:
+    var: check_docker_svc_output.stdout_lines
+
