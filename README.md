@@ -121,7 +121,6 @@ as described in the official Harbor documentation <https://goharbor.io/docs/2.8.
 
 ## Improvement possibilities (TODO):
 
-  - All parameters to group_vars/all group variables (remove "burnt in" values, provide a general config template)
   - Implement status checks after completed steps
   - Enabling Internal TLS
       <https://goharbor.io/docs/2.8.0/install-config/configure-internal-tls/>
