@@ -32,8 +32,15 @@ as described in the official Harbor documentation <https://goharbor.io/docs/2.8.
 
 ## Configuration parameters:
 
-  In `group_vars/all` group variables.
+   Set in `group_vars/all` group variables file. Template provided at `group_vars/all.template`. (copy group_vars/all.template group_vars/all)
+     - ansible_port: PORT
+     - ansible_user: USERNAME
+     - ansible_ssh_private_key_file: ~/.ssh/PRIVATEKEYFILE
+     - reg_fqdn: hostname.example.com
+     - reg_hostname: hostname
+     - reg_startpassword: NotVerySecurePassword
 
+   Set FQDN in `hosts` file. Template provided in `hosts/template`. (copy hosts/template hosts)
 
 ## Main ansible playbook:
 
