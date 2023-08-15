@@ -10,6 +10,8 @@ also upgrading Alpine linux to `latest-stable` (tested on Alpine 3.16, 3.17, and
 Also generating CA and server keys and certificates, and configuring them,
 as described in the official Harbor documentation <https://goharbor.io/docs/2.8.0/install-config/>.
 
+![harbor install ansible output illustration](images/harbor-small.png)
+
 ## Requirements:
 
   Alpine linux 3.16 or newer (playbook updates to latest stable)
