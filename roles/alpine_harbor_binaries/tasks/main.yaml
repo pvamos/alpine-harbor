@@ -13,36 +13,10 @@
     state: present
     update_cache: true
 
-- name: Download harbor-online-installer-v2.8.3.tgz
+- name: Download harbor-online-installer-v2.12.2.tgz
   ansible.builtin.get_url:
-    url: https://github.com/goharbor/harbor/releases/download/v2.8.3/harbor-online-installer-v2.8.3.tgz
+    url: https://github.com/goharbor/harbor/releases/download/v2.12.2/harbor-online-installer-v2.12.2.tgz
     dest: /root
-
-- name: Download harbor-online-installer-v2.8.3.tgz.asc
-  ansible.builtin.get_url:
-    url: https://github.com/goharbor/harbor/releases/download/v2.8.3/harbor-online-installer-v2.8.3.tgz.asc
-    dest: /root
-
-# always fails at first try, but succeeds at second try
-- name: First failing try, Get Harbor signing public key, gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C
-  ansible.builtin.raw: 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/bin/gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C'
-  ignore_errors: true
-
-- name: Second, successful try, Get Harbor signing public key, gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C
-  ansible.builtin.raw: 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /usr/bin/gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C'
-
-- name: Check if downloaded installer is genuine gpg -v --keyserver hkps://keyserver.ubuntu.com --verify /root/harbor-online-installer-v2.8.3.tgz.asc
-  ansible.builtin.command:
-    cmd: /usr/bin/gpg -v --keyserver hkps://keyserver.ubuntu.com --verify /root/harbor-online-installer-v2.8.3.tgz.asc
-  register: check_installer_output
-
-- name: Print installer check stdout output
-  ansible.builtin.debug:
-    var: check_installer_output.stdout_lines
-
-- name: Print installer check stderr output
-  ansible.builtin.debug:
-    var: check_installer_output.stderr_lines
 
 - name: Ensure group "harbor" exists with correct gid 10000
   ansible.builtin.group:
@@ -65,9 +39,9 @@
     owner: harbor
     group: harbor
 
-- name: Unarchive harbor-online-installer-v2.8.3.tgz to /harbor
+- name: Unarchive harbor-online-installer-v2.12.2.tgz to /harbor
   ansible.builtin.unarchive:
-    src: /root/harbor-online-installer-v2.8.3.tgz
+    src: /root/harbor-online-installer-v2.12.2.tgz
     dest: /
     remote_src: yes
 
@@ -81,7 +55,7 @@
   ansible.builtin.command: /usr/bin/openssl genrsa -out /harbor/{{reg_fqdn}}.key 4096
 
 - name: Generate certificate signing request /harbor/{{reg_fqdn}}.csr
-  ansible.builtin.command: /usr/bin/openssl req -sha512 -new -subj "/CN={{reg_fqdn}}" -key /harbor/{{reg_fqdn}}.key -out /harbor/reg.frankfurt.pvamos.net.csr
+  ansible.builtin.command: /usr/bin/openssl req -sha512 -new -subj "/CN={{reg_fqdn}}" -key /harbor/{{reg_fqdn}}.key -out /harbor/{{reg_fqdn}}.csr
 
 - name: Create x509 v3 extension file /harbor/v3.ext from jinja template
   template:

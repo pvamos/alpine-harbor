@@ -6,5 +6,6 @@
   roles:
     - role: alpine_latest
     - role: alpine_kernelparams
+    - role: alpine_ufw
     - role: alpine_harbor_binaries
     - role: alpine_harbor_config
