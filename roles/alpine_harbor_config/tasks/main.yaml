@@ -31,6 +31,12 @@
   ansible.builtin.debug:
     var: prepare_output.stderr_lines
 
+#- name: If Harbor is running, stop the existing instance
+#  ansible.builtin.command: /usr/bin/docker-compose down -v
+
+#- name: Start Harbor
+#  ansible.builtin.command: /usr/bin/docker-compose up -d
+
 - name: Run /harbor/install.sh --with-trivy
   ansible.builtin.raw: 'cd /harbor && PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /harbor/install.sh --with-trivy'
   register: installsh_output

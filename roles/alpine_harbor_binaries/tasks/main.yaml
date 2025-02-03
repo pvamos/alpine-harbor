@@ -45,28 +45,22 @@
     dest: /
     remote_src: yes
 
-- name: Generate CA certificate private key /harbor/ca.key
-  ansible.builtin.command: /usr/bin/openssl genrsa -out /harbor/ca.key 4096
+- name: Install apk package - certbot
+  command: /sbin/apk add certbot
 
-- name: Generate CA certificate /harbor/ca.crt
-  ansible.builtin.command: /usr/bin/openssl req -x509 -new -nodes -sha512 -days 3650 -subj "/CN={{reg_fqdn}}" -key /harbor/ca.key -out /harbor/ca.crt
+- name: Open port 80/tcp with ufw
+  command: /usr/sbin/ufw allow 80/tcp
 
-- name: Generate Server Certificate private key /harbor/{{reg_fqdn}}.key
-  ansible.builtin.command: /usr/bin/openssl genrsa -out /harbor/{{reg_fqdn}}.key 4096
+- name: Open port 443/tcp with ufw
+  command: /usr/sbin/ufw allow 443/tcp
 
-- name: Generate certificate signing request /harbor/{{reg_fqdn}}.csr
-  ansible.builtin.command: /usr/bin/openssl req -sha512 -new -subj "/CN={{reg_fqdn}}" -key /harbor/{{reg_fqdn}}.key -out /harbor/{{reg_fqdn}}.csr
+- name: Get ufw status numbered
+  ansible.builtin.command: /usr/sbin/ufw status numbered
+  register: get_ufw_status
 
-- name: Create x509 v3 extension file /harbor/v3.ext from jinja template
-  template:
-    src:  templates/v3.ext.j2
-    dest: /harbor/v3.ext
-    owner: root
-    group: root
-    mode: '0644'
-
-- name: Use the x509 v3 extension file to generate Harbor host certificate /harbor/{{reg_fqdn}}.crt
-  ansible.builtin.command: /usr/bin/openssl x509 -req -sha512 -days 3650 -extfile /harbor/v3.ext -CA /harbor/ca.crt -CAkey /harbor/ca.key -CAcreateserial -in /harbor/{{reg_fqdn}}.csr -out /harbor/{{reg_fqdn}}.crt
+- name: Print ufw status numbered
+  ansible.builtin.debug:
+    var: get_ufw_status.stdout_lines
 
 - name: Create /data directory if it does not exist
   ansible.builtin.file:
@@ -76,28 +70,21 @@
     owner: harbor
     group: harbor
 
-- name: Create /data/cert directory if it does not exist
+- name: Create /data/secret directory if it does not exist
   ansible.builtin.file:
-    path: /data/cert
+    path: /data/secret
     state: directory
     mode: '0755'
     owner: harbor
     group: harbor
 
-- name: Copy /harbor/{{reg_fqdn}}.crt to /data/cert/
-  ansible.builtin.copy:
-    src: /harbor/{{reg_fqdn}}.crt
-    dest: /data/cert/{{reg_fqdn}}.crt
-    remote_src: yes
-
-- name: Copy /harbor/{{reg_fqdn}}.key to /data/cert/
-  ansible.builtin.copy:
-    src: /harbor/{{reg_fqdn}}.key
-    dest: /data/cert/{{reg_fqdn}}.key
-    remote_src: yes
-
-- name: Convert {{reg_fqdn}}.crt to {{reg_fqdn}}.cert, for use by Docker
-  ansible.builtin.command: /usr/bin/openssl x509 -inform PEM -in /harbor/{{reg_fqdn}}.crt -out /harbor/{{reg_fqdn}}.cert
+- name: Create /data/secret/cert directory if it does not exist
+  ansible.builtin.file:
+    path: /data/secret/cert
+    state: directory
+    mode: '0755'
+    owner: harbor
+    group: harbor
 
 - name: Create /etc/docker directory if it does not exist
   ansible.builtin.file:
@@ -117,22 +104,61 @@
     state: directory
     mode: '0755'
 
-- name: Copy /harbor/{{reg_fqdn}}.cert to /etc/docker/certs.d/{{reg_fqdn}}/
-  ansible.builtin.copy:
-    src: /harbor/{{reg_fqdn}}.cert
-    dest: /etc/docker/certs.d/{{reg_fqdn}}/{{reg_fqdn}}.cert
-    remote_src: yes
+- name: Get LetsEncrypt certificate for {{reg_fqdn}} with certbot
+  command: certbot certonly --standalone -m {{reg_certbot_email}} --agree-tos -n -d {{reg_fqdn}}
+  register: get_certbot_result
 
-- name: Copy /harbor/{{reg_fqdn}}.key to /etc/docker/certs.d/{{reg_fqdn}}/
-  ansible.builtin.copy:
-    src: /harbor/{{reg_fqdn}}.key
-    dest: /etc/docker/certs.d/{{reg_fqdn}}/{{reg_fqdn}}.key
-    remote_src: yes
+- name: Print certbot output
+  ansible.builtin.debug:
+    var: get_certbot_result.stdout_lines
 
-- name: Copy /harbor/ca.crt to /etc/docker/certs.d/{{reg_fqdn}}/
+- name: Create /etc/letsencrypt/renewal-hooks/pre/harbor.sh
+  copy:
+    dest: /etc/letsencrypt/renewal-hooks/pre/harbor.sh
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      /usr/bin/docker stop nginx
+
+- name: Create /etc/letsencrypt/renewal-hooks/post/harbor.sh
+  copy:
+    dest: /etc/letsencrypt/renewal-hooks/post/harbor.sh
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      /bin/cp -f /etc/letsencrypt/live/{{reg_fqdn}}/fullchain.pem /data/secret/cert/server.crt
+      /bin/cp -f /etc/letsencrypt/live/{{reg_fqdn}}/privkey.pem /data/secret/cert/server.key
+      /bin/chown harbor:harbor /data/secret/cert/server.crt
+      /bin/chown harbor:harbor /data/secret/cert/server.key
+      /usr/bin/openssl x509 -inform PEM -in /etc/letsencrypt/live/{{reg_fqdn}}/fullchain.pem -out /etc/docker/certs.d/{{reg_fqdn}}/{{reg_fqdn}}.cert
+      /bin/cp -f /etc/letsencrypt/live/{{reg_fqdn}}/privkey.pem /etc/docker/certs.d/{{reg_fqdn}}/{{reg_fqdn}}.key
+      /usr/bin/docker start nginx
+
+- name: Copy /etc/letsencrypt/live/{{reg_fqdn}}/fullchain.pem to /data/secret/cert/server.crt
   ansible.builtin.copy:
-    src: /harbor/ca.crt
-    dest: /etc/docker/certs.d/{{reg_fqdn}}/ca.crt
+    src: /etc/letsencrypt/live/{{reg_fqdn}}/fullchain.pem
+    dest: /data/secret/cert/server.crt
+    remote_src: yes
+    mode: '0755'
+    owner: harbor
+    group: harbor
+
+- name: Copy /etc/letsencrypt/live/{{reg_fqdn}}/privkey.pem to /data/secret/cert/server.key
+  ansible.builtin.copy:
+    src: /etc/letsencrypt/live/{{reg_fqdn}}/privkey.pem
+    dest: /data/secret/cert/server.key
+    remote_src: yes
+    mode: '0755'
+    owner: harbor
+    group: harbor
+
+- name: Convert LetsEncrypt certificate for use by Docker
+  ansible.builtin.command: openssl x509 -inform PEM -in /etc/letsencrypt/live/{{reg_fqdn}}/fullchain.pem -out /etc/docker/certs.d/{{reg_fqdn}}/proxy.frankfurt.envsensor.net.cert
+
+- name: Copy /etc/letsencrypt/live/{{reg_fqdn}}/privkey.pem to /data/secret/cert/server.key
+  ansible.builtin.copy:
+    src: /etc/letsencrypt/live/{{reg_fqdn}}/privkey.pem
+    dest: /etc/docker/certs.d/{{reg_fqdn}}/proxy.frankfurt.envsensor.net.key
     remote_src: yes
 
 - name: Add docker service to default runlevel
@@ -149,4 +175,3 @@
 - name: Print docker service status
   ansible.builtin.debug:
     var: check_docker_svc_output.stdout_lines
-
