@@ -12,7 +12,7 @@
   command: /usr/sbin/ufw allow {{ ansible_port }}/tcp
 
 # see https://github.com/docker/hub-feedback/issues/2421
-- name: Denying IPv6 access to DockerHub, it fail back to ipv4 which works.
+- name: Denying IPv6 access to DockerHub, it fails back to IPv4 what works.
   command: /usr/sbin/ufw deny out from any to 2600:1f18:2148:bc00::/56
 
 - name: Enabling ufw with - ufw enable

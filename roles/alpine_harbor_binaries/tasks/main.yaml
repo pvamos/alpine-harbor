@@ -48,11 +48,14 @@
 - name: Install apk package - certbot
   command: /sbin/apk add certbot
 
-- name: Open port 80/tcp with ufw
+- name: Open port 80/tcp with ufw for Harbor portal and core API HTTP
   command: /usr/sbin/ufw allow 80/tcp
 
-- name: Open port 443/tcp with ufw
+- name: Open port 443/tcp with ufw for Harbor portal and core API HTTPS
   command: /usr/sbin/ufw allow 443/tcp
+
+#- name: Open port 4443/tcp with ufw for Connections to the Docker Content Trust service for Harbor (Notary)
+#  command: /usr/sbin/ufw allow 4443/tcp
 
 - name: Get ufw status numbered
   ansible.builtin.command: /usr/sbin/ufw status numbered
@@ -153,12 +156,12 @@
     group: harbor
 
 - name: Convert LetsEncrypt certificate for use by Docker
-  ansible.builtin.command: openssl x509 -inform PEM -in /etc/letsencrypt/live/{{reg_fqdn}}/fullchain.pem -out /etc/docker/certs.d/{{reg_fqdn}}/proxy.frankfurt.envsensor.net.cert
+  ansible.builtin.command: openssl x509 -inform PEM -in /etc/letsencrypt/live/{{reg_fqdn}}/fullchain.pem -out /etc/docker/certs.d/{{reg_fqdn}}/{{reg_fqdn}}.cert
 
 - name: Copy /etc/letsencrypt/live/{{reg_fqdn}}/privkey.pem to /data/secret/cert/server.key
   ansible.builtin.copy:
     src: /etc/letsencrypt/live/{{reg_fqdn}}/privkey.pem
-    dest: /etc/docker/certs.d/{{reg_fqdn}}/proxy.frankfurt.envsensor.net.key
+    dest: /etc/docker/certs.d/{{reg_fqdn}}/{{reg_fqdn}}.key
     remote_src: yes
 
 - name: Add docker service to default runlevel
@@ -175,3 +178,12 @@
 - name: Print docker service status
   ansible.builtin.debug:
     var: check_docker_svc_output.stdout_lines
+
+- name: DockerHub login
+  ansible.builtin.command:
+    cmd: docker login -u {{reg_dockerhub_user}} -p {{reg_dockerhub_password}}
+  register: docker_login_output
+
+- name: Print DockerHub login output
+  ansible.builtin.debug:
+    var: docker_login_output.stdout_lines
