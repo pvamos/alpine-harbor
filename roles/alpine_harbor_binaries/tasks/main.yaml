@@ -13,9 +13,9 @@
     state: present
     update_cache: true
 
-- name: Download harbor-online-installer-v2.12.3.tgz
+- name: Download harbor-online-installer-v2.13.0.tgz
   ansible.builtin.get_url:
-    url: https://github.com/goharbor/harbor/releases/download/v2.12.3/harbor-online-installer-v2.12.3.tgz
+    url: https://github.com/goharbor/harbor/releases/download/v2.13.0/harbor-online-installer-v2.13.0.tgz
     dest: /root
 
 - name: Ensure group "harbor" exists with correct gid 10000
@@ -39,9 +39,9 @@
     owner: harbor
     group: harbor
 
-- name: Unarchive harbor-online-installer-v2.12.3.tgz to /harbor
+- name: Unarchive harbor-online-installer-v2.13.0.tgz to /harbor
   ansible.builtin.unarchive:
-    src: /root/harbor-online-installer-v2.12.3.tgz
+    src: /root/harbor-online-installer-v2.13.0.tgz
     dest: /
     remote_src: yes
 

@@ -5,8 +5,8 @@
 - name: Test connection with user {{ ansible_user }} on port {{ ansible_port }}
   ping:
 
-- name: Install apk packages - ip6tables ufw
-  command: /sbin/apk add ip6tables ufw
+- name: Install apk packages - iptables ufw
+  command: /sbin/apk add iptables ufw
 
 - name: Allow incoming connections on tcp {{ ansible_port }}
   command: /usr/sbin/ufw allow {{ ansible_port }}/tcp
