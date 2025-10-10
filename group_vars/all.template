@@ -25,5 +25,6 @@ reg_dockerhub_password: PASSWORD
 
 reg_certbot_email: someone@example.com
 
-reg_startpassword: NotVerySecurePassword
+reg_startpassword: VerySecurePassword
 
+reg_dbpassword: VerySecureDBPassword
