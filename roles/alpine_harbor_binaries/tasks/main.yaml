@@ -15,7 +15,7 @@
 
 - name: Download harbor-online-installer-v2.14.0.tgz
   ansible.builtin.get_url:
-    url: https://github.com/goharbor/harbor/releases/download/v2.13.0/harbor-online-installer-v2.14.0.tgz
+    url: https://github.com/goharbor/harbor/releases/download/v2.14.0/harbor-online-installer-v2.14.0.tgz
     dest: /root
 
 - name: Ensure group "harbor" exists with correct gid 10000

@@ -5,15 +5,30 @@
 - name: Test connection with user {{ ansible_user }} on port {{ ansible_port }}
   ping:
 
-- name: Set /etc/apk/repositories to latest-stable/main and latest-stable/community
+- name: Set /etc/apk/repositories to latest-stable/main, latest-stable/community and #edge/testing
   copy:
-    src:  files/repositories
+    src:  files/repositories.latest
     dest: /etc/apk/repositories
+
+- name: Run /sbin/apk update
+  command: /sbin/apk update
+  register: apk_update_result
+
+- name: Print /sbin/apk update output
+  ansible.builtin.debug:
+    var: apk_update_result.stdout_lines
 
 - name: Upgrade all installed apk packages to the latest versions
   community.general.apk:
     upgrade: true
     update_cache: true
+
+- name: sync
+  ansible.builtin.raw: sync
+
+- name: Pause for 5 seconds
+  ansible.builtin.pause:
+    seconds: 5
 
 - name: Reboot the host after apk upgrade
   reboot:
