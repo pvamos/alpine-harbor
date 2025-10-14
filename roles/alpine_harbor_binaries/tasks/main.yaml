@@ -120,7 +120,7 @@
     dest: /etc/letsencrypt/renewal-hooks/pre/harbor.sh
     mode: '0755'
     content: |
-      #!/bin/bash
+      #!/bin/sh
       /usr/bin/docker stop nginx
 
 - name: Create /etc/letsencrypt/renewal-hooks/post/harbor.sh
@@ -128,7 +128,7 @@
     dest: /etc/letsencrypt/renewal-hooks/post/harbor.sh
     mode: '0755'
     content: |
-      #!/bin/bash
+      #!/bin/sh
       /bin/cp -f /etc/letsencrypt/live/{{reg_fqdn}}/fullchain.pem /data/secret/cert/server.crt
       /bin/cp -f /etc/letsencrypt/live/{{reg_fqdn}}/privkey.pem /data/secret/cert/server.key
       /bin/chown harbor:harbor /data/secret/cert/server.crt
