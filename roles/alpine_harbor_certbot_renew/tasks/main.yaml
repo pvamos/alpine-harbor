@@ -1,0 +1,82 @@
+---
+- name: Install certbot and cron daemon (dcron)
+  community.general.apk:
+    name:
+      - certbot
+      - dcron
+    state: present
+    update_cache: true
+
+- name: Enable and start dcron (cron daemon)
+  ansible.builtin.service:
+    name: dcron
+    enabled: true
+    state: started
+
+- name: Ensure LetsEncrypt renewal hook directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - /etc/letsencrypt/renewal-hooks
+    - /etc/letsencrypt/renewal-hooks/pre
+    - /etc/letsencrypt/renewal-hooks/deploy
+    - /etc/letsencrypt/renewal-hooks/post
+
+# Pre-hook: stop Harbor nginx so standalone certbot can bind :80
+- name: Install pre-hook to stop Harbor nginx
+  ansible.builtin.copy:
+    dest: /etc/letsencrypt/renewal-hooks/pre/001-harbor-stop-nginx.sh
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      /usr/bin/docker stop {{ harbor_nginx_container_name }} >/dev/null 2>&1 || true
+
+# Deploy-hook: runs only after successful renewal
+- name: Install deploy-hook to update cert files for Harbor and Docker
+  ansible.builtin.copy:
+    dest: /etc/letsencrypt/renewal-hooks/deploy/001-harbor-sync-certs.sh
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      set -eu
+
+      DOMAIN="{{ reg_fqdn }}"
+      LE_DIR="/etc/letsencrypt/live/${DOMAIN}"
+
+      # Ensure target dirs exist (idempotent safety)
+      install -d -m 0755 /data/secret/cert
+      install -d -m 0755 "/etc/docker/certs.d/${DOMAIN}"
+
+      # Harbor uses these in /data/secret/cert in your current setup
+      cp -f "${LE_DIR}/fullchain.pem" /data/secret/cert/server.crt
+      cp -f "${LE_DIR}/privkey.pem"   /data/secret/cert/server.key
+      chown harbor:harbor /data/secret/cert/server.crt /data/secret/cert/server.key 2>/dev/null || true
+
+      # Your harbor.yml points nginx at:
+      #   /etc/docker/certs.d/<fqdn>/<fqdn>.cert and .key
+      #
+      # Prefer to serve fullchain to clients:
+      cp -f "${LE_DIR}/fullchain.pem" "/etc/docker/certs.d/${DOMAIN}/${DOMAIN}.cert"
+      cp -f "${LE_DIR}/privkey.pem"   "/etc/docker/certs.d/${DOMAIN}/${DOMAIN}.key"
+
+# Post-hook: start Harbor nginx again (even if renewal didn’t happen)
+- name: Install post-hook to start Harbor nginx
+  ansible.builtin.copy:
+    dest: /etc/letsencrypt/renewal-hooks/post/001-harbor-start-nginx.sh
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      /usr/bin/docker start {{ harbor_nginx_container_name }} >/dev/null 2>&1 || true
+
+- name: Schedule certbot renew twice daily (with random sleep)
+  ansible.builtin.cron:
+    name: "certbot renew (Harbor)"
+    user: root
+    minute: "{{ harbor_certbot_cron_minute }}"
+    hour: "{{ harbor_certbot_cron_hours }}"
+    job: >-
+      /bin/sh -c 'SLEEPTIME=$(awk "BEGIN{srand(); print int(rand()*3600)}");
+      sleep $SLEEPTIME;
+      /usr/bin/certbot renew -q'

@@ -1,0 +1,7 @@
+---
+# Harbor's nginx container name in the Harbor docker-compose deployment
+harbor_nginx_container_name: "nginx"
+
+# Run twice daily: midnight and noon by default
+harbor_certbot_cron_hours: "0,12"
+harbor_certbot_cron_minute: "17"

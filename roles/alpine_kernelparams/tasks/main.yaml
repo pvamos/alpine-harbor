@@ -29,12 +29,16 @@
       nf_conntrack
       overlay
 
-- name: Install apk packages linux-virt linux-virt-dev
+- name: Install apk packages linux-virt linux-virt-dev iptables
   community.general.apk:
     name: linux-virt,linux-virt-dev
     update_cache: true
     state: present
-
+  register: apk_add_linux_virt_iptables
+  until: apk_add_linux_virt_iptables is succeeded
+  retries: "{{ apk_retry_count }}"
+  delay: 5
+  
 - name: Modprobe br_netfilter
   command: /sbin/modprobe br_netfilter
 

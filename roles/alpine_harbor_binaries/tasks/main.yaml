@@ -7,16 +7,24 @@
 - name: Test connection with ping
   ansible.builtin.ping:
 
-- name: Install packages python3 py-setuptools tar gzip sed curl bash openssl docker docker-compose gpg ncurses
+- name: Install packages python3 py-setuptools tar gzip sed curl bash openssl docker docker-compose gpg ncurses certbot
   community.general.apk:
     name: python3,py-setuptools,tar,gzip,sed,curl,bash,openssl,docker,docker-compose,gpg,ncurses
     state: present
     update_cache: true
+  register: apk_add_docker_python3
+  until: apk_add_docker_python3 is succeeded
+  retries: "{{ apk_retry_count }}"
+  delay: 5
 
 - name: Download harbor-online-installer-v2.14.0.tgz
   ansible.builtin.get_url:
     url: https://github.com/goharbor/harbor/releases/download/v2.14.0/harbor-online-installer-v2.14.0.tgz
     dest: /root
+  register: get_url_harbor_istaller
+  until: get_url_harbor_istaller is succeeded
+  retries: "{{ curl_retry_count }}"
+  delay: 5
 
 - name: Ensure group "harbor" exists with correct gid 10000
   ansible.builtin.group:
@@ -45,25 +53,22 @@
     dest: /
     remote_src: yes
 
-- name: Install apk package - certbot
-  command: /sbin/apk add certbot
+# - name: Open port 80/tcp with ufw for Harbor portal and core API HTTP
+  # command: /usr/sbin/ufw allow 80/tcp
 
-- name: Open port 80/tcp with ufw for Harbor portal and core API HTTP
-  command: /usr/sbin/ufw allow 80/tcp
-
-- name: Open port 443/tcp with ufw for Harbor portal and core API HTTPS
-  command: /usr/sbin/ufw allow 443/tcp
+# - name: Open port 443/tcp with ufw for Harbor portal and core API HTTPS
+  # command: /usr/sbin/ufw allow 443/tcp
 
 #- name: Open port 4443/tcp with ufw for Connections to the Docker Content Trust service for Harbor (Notary)
 #  command: /usr/sbin/ufw allow 4443/tcp
 
-- name: Get ufw status numbered
-  ansible.builtin.command: /usr/sbin/ufw status numbered
-  register: get_ufw_status
+# - name: Get ufw status numbered
+  # ansible.builtin.command: /usr/sbin/ufw status numbered
+  # register: get_ufw_status
 
-- name: Print ufw status numbered
-  ansible.builtin.debug:
-    var: get_ufw_status.stdout_lines
+# - name: Print ufw status numbered
+  # ansible.builtin.debug:
+    # var: get_ufw_status.stdout_lines
 
 - name: Create /data directory if it does not exist
   ansible.builtin.file:
